@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.sqlite3
+*.db
+*.log
+
+# VSCode
+.vscode/
+.history/
+
+# Test/coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache/
+coverage.xml
+
+# Virtualenv
+.venv/
+env/
+ENV/
+venv/
+Pipfile.lock
+
+# Playwright/Browser
+playwright-report/
+previews/*.jpg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Lock file (uv)
+uv.lock
+
+# Git
+.git/
+.gitmodules
+
+# Ignore database
+web_archive.db
