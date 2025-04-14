@@ -2,7 +2,7 @@ from playwright.async_api import async_playwright
 import os
 import asyncio
 
-PREVIEW_DIR = "previews"
+PREVIEW_DIR = os.environ.get("WEB_ARCHIVE_PREVIEW_DIR", "previews")
 PREVIEW_WIDTH = 1024
 PREVIEW_HEIGHT = 768
 

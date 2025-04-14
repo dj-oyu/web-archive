@@ -16,27 +16,24 @@ from modules.db_manager import DB_PATH, init_database # Import DB_PATH for clean
 # Fixture to initialize and clean up the database for web interface tests
 @pytest.fixture(scope="module", autouse=True)
 def setup_test_environment():
-    # Ensure a clean state before tests run
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
-    init_database(DB_PATH)
+    # テスト用DBのみを削除する
+    test_db_path = os.environ.get("WEB_ARCHIVE_DB_PATH", "web_archive.db")
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+    init_database(test_db_path)
     # Ensure preview directory exists
     if not os.path.exists("previews"):
         os.makedirs("previews")
     yield
-    # Clean up database file after tests
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    # Clean up only the test DB file after tests
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
     # Clean up preview files
     preview_dir = "previews"
     if os.path.exists(preview_dir):
         for f in os.listdir(preview_dir):
-            if f.startswith("mock_") or f.startswith("test_"): # Be specific about cleanup
+            if f.startswith("mock_") or f.startswith("test_"):
                 os.remove(os.path.join(preview_dir, f))
-        # try:
-        #     os.rmdir(preview_dir) # Only remove if empty
-        # except OSError:
-        #     pass
 
 @pytest.fixture
 def client():

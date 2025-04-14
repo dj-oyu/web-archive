@@ -16,7 +16,7 @@ def test_db(tmp_path_factory):
     db_path = tmp_path_factory.mktemp("data") / "test_archive.db"
     init_database(str(db_path))
     # Clean up previews dir if it exists from previous runs
-    preview_dir = "previews"
+    preview_dir = os.environ["WEB_ARCHIVE_PREVIEW_DIR"]
     if os.path.exists(preview_dir):
         for f in os.listdir(preview_dir):
             os.remove(os.path.join(preview_dir, f))
@@ -131,7 +131,7 @@ def test_delete_content(mock_remove, mock_exists, test_db, sample_content, mock_
     content_to_save["resources"] = { "images": [{"url": "image.jpg", "webp_data": b"webp data"}]}
     random_url = save_content(content_to_save, db_path=test_db)
     preview_filename = sample_content["preview_filename"]
-    preview_dir = "previews"
+    preview_dir = os.environ["WEB_ARCHIVE_PREVIEW_DIR"]
     if not os.path.exists(preview_dir): os.makedirs(preview_dir)
     dummy_preview_path = os.path.join(preview_dir, preview_filename)
     with open(dummy_preview_path, 'w') as f: f.write('dummy')
@@ -150,9 +150,11 @@ def test_delete_content(mock_remove, mock_exists, test_db, sample_content, mock_
     # Use assert_called_with to check the specific call inside delete_content
     mock_exists.assert_called_with(dummy_preview_path)
     mock_remove.assert_called_with(dummy_preview_path)
-    # Check that remove was called only once (implicitly by assert_called_with if strict)
-    # Or explicitly check call count if needed after ensuring the right call happened.
-    # assert mock_remove.call_count == 1 # Might be too strict depending on setup
 
-    # Cleanup dummy file if mock didn't actually remove it
-    if os.path.exists(dummy_preview_path): os.remove(dummy_preview_path)
+# Cleanup dummy file if mock didn't actually remove it
+def teardown_module(module):
+    preview_filename = "test_preview.jpg"
+    preview_dir = os.environ.get("WEB_ARCHIVE_PREVIEW_DIR", "previews")
+    dummy_preview_path = os.path.join(preview_dir, preview_filename)
+    if os.path.exists(dummy_preview_path):
+        os.remove(dummy_preview_path)

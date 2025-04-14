@@ -23,6 +23,7 @@ app = FastAPI()
 preview_queue = asyncio.Queue()
 sse_notification_queue = asyncio.Queue()
 MAX_CONCURRENT_PREVIEWS = 1
+preview_worker_tasks = []
 
 async def preview_worker():
     """Worker task to process preview generation queue sequentially."""
@@ -76,9 +77,29 @@ async def preview_worker():
 async def startup_event():
     """Start the preview worker task on application startup."""
     init_database()
+    global preview_worker_tasks
+    preview_worker_tasks = []
     for i in range(MAX_CONCURRENT_PREVIEWS):
-        asyncio.create_task(preview_worker())
+        task = asyncio.create_task(preview_worker())
+        preview_worker_tasks.append(task)
         print(f"Started preview worker {i+1}/{MAX_CONCURRENT_PREVIEWS}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cancel preview worker tasks and all asyncio tasks on shutdown (for graceful exit with Ctrl+C)"""
+    global preview_worker_tasks
+    for task in preview_worker_tasks:
+        task.cancel()
+    await asyncio.gather(*preview_worker_tasks, return_exceptions=True)
+    print("All preview worker tasks cancelled.")
+
+    # 追加: asyncioの全タスクをキャンセル
+    current_task = asyncio.current_task()
+    all_tasks = [t for t in asyncio.all_tasks() if t is not current_task]
+    for t in all_tasks:
+        t.cancel()
+    await asyncio.gather(*all_tasks, return_exceptions=True)
+    print("All asyncio tasks cancelled.")
 
 class ArchiveRequest(BaseModel):
     url: str

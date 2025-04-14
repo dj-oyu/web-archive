@@ -6,12 +6,14 @@ import os
 import base64 # Base64をインポート
 import time # Import time for sleep
 
-DB_PATH = "web_archive.db"
+DB_PATH = os.environ.get("WEB_ARCHIVE_DB_PATH", "web_archive.db")
 MAX_RETRIES = 10 # Define max retries for URL generation
 RETRY_DELAY = 3.0 # Increase delay between retries to 3 seconds
 
-def init_database(db_path=DB_PATH):
+def init_database(db_path=None):
     """データベースとテーブルを初期化する"""
+    if db_path is None:
+        db_path = os.environ.get("WEB_ARCHIVE_DB_PATH", "web_archive.db")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
@@ -40,8 +42,10 @@ def generate_random_url():
     """一意のランダムURLを生成する"""
     return str(uuid.uuid4())
 
-def save_content(content, db_path=DB_PATH):
+def save_content(content, db_path=None):
     """コンテンツをデータベースに保存し、対応するランダムURLを返す"""
+    if db_path is None:
+        db_path = os.environ.get("WEB_ARCHIVE_DB_PATH", "web_archive.db")
     original_url = content.get("original_url", "")
     html_content = content.get("html_content", "")
     
@@ -160,7 +164,8 @@ def delete_content(random_url, db_path=DB_PATH):
 
         # If a preview file exists, delete it
         if preview_filename:
-            preview_path = os.path.join("previews", preview_filename)
+            preview_dir = os.environ.get("WEB_ARCHIVE_PREVIEW_DIR", "previews")
+            preview_path = os.path.join(preview_dir, preview_filename)
             if os.path.exists(preview_path):
                 try:
                     os.remove(preview_path)
