@@ -1,0 +1,26 @@
+# Web Archive Project Dependencies
+
+# Web Framework
+fastapi==0.92.0
+uvicorn==0.20.0
+
+# Content Fetching
+requests==2.28.2
+beautifulsoup4==4.11.2
+
+# Image Processing
+Pillow==9.4.0
+
+# Database
+# SQLite is included in Python standard library
+
+# Testing
+pytest==7.2.1
+pytest-asyncio==0.20.3
+httpx==0.23.3
+
+# Headless Browser for Previews
+playwright==1.40.0
+
+# Server-Sent Events
+sse-starlette==1.6.5 # Check for latest compatible version if needed
