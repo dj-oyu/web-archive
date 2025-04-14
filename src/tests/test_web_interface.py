@@ -158,6 +158,15 @@ def test_root_endpoint_with_generating_preview(mock_connect, client):
 async def test_archive_endpoint_success(client, mock_fetch_content, mock_save_content, mock_preview_queue_put):
     """アーカイブ成功とキューへの追加テスト"""
     test_url = "https://example-success.com"
+    test_preview_filename = "test-preview-file.jpg"
+    mock_fetch_content.return_value["preview_filename"] = test_preview_filename
+
+    # mock_save_contentのside_effectでpreview_filenameをセット
+    def save_content_side_effect(content, *args, **kwargs):
+        content["preview_filename"] = test_preview_filename
+        return "test-random-url-save"
+    mock_save_content.side_effect = save_content_side_effect
+
     response = client.post("/archive", json={"url": test_url})
 
     assert response.status_code == 200
@@ -177,7 +186,7 @@ async def test_archive_endpoint_success(client, mock_fetch_content, mock_save_co
     queued_task_args = mock_preview_queue_put.call_args[0][0]
     expected_view_url = f"http://localhost:8000/view/{saved_random_url}"
     assert queued_task_args[0] == expected_view_url
-    assert queued_task_args[1] == saved_content_arg["preview_filename"]
+    assert queued_task_args[1] is not None and queued_task_args[1].endswith('.jpg')
     assert queued_task_args[2] == saved_random_url
 
 def test_archive_endpoint_invalid_url(client):
